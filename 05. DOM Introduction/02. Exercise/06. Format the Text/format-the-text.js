@@ -1,35 +1,13 @@
 function solve() {
-  const allInput = document.getElementById('input').value.split('.');
-  const inputContent = allInput.filter(item => item.length !== 0);
-  let divElement = document.getElementById('output');
+   let text = document.getElementById('input').value;
+   let sentences = text.split('.').filter(s=>s.trim() !== '');
+   let result = [];
 
-  while (inputContent.length > 0) {
-    let paragraphElement = document.createElement('p');
-    let count = 0;
-    let paragraphContent = [];
+   for (let i = 0; i < sentences.length; i += 3) {
+    let paragraphSentences = sentences.slice(i, i + 3).map(s=>s.trim() + '.').join(' ');
+    let paragraph = `<p>${paragraphSentences}</p>`;
+    result.push(paragraph);
+   }
 
-    while (count < 3) {
-      if (inputContent.length === 0) {
-        break;
-      }
-
-      let sentence = inputContent.shift();
-      if (sentence.length === 0) {
-        continue;
-      }
-
-      count += 1;
-
-      if (inputContent.length === 0 || count === 3) {
-        sentence += '.';
-      }
-
-      paragraphContent.push(sentence);
-    }
-
-    paragraphElement.textContent = paragraphContent.join('. ');
-    divElement.appendChild(paragraphElement);
-  }
+   document.getElementById('output').innerHTML = result.join('\n');
 }
-
-// 80 - not finished
