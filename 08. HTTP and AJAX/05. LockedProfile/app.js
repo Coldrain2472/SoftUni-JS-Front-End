@@ -1,56 +1,54 @@
-async function lockedProfile() {
-  const baseURL = 'http://localhost:3030/jsonstore/advanced/profiles'
-
-  let profilesResponse = await fetch(baseURL)
-  let profiles = await profilesResponse.json()
-
-  let mainElement = document.getElementById('main')
-  mainElement.innerHTML = ''
-
-  let counter = 1
-  for (let [profileID, profileInfo] of Object.entries(profiles)) {
-      let divProfile = document.createElement('div')
-      divProfile.className = 'profile'
-
-      let profileHTML = `
-          <img src="./iconProfile2.png" class="userIcon" />
-          <label>Lock</label>
-          <input type="radio" name="user${counter}Locked" value="lock" checked>
-          <label>Unlock</label>
-          <input type="radio" name="user${counter}Locked" value="unlock"><br>
-          <hr>
-          <label>Username</label>
-          <input type="text" name="user${counter}Username" value="${profileInfo.username}" disabled readonly />
-          <div class="user${counter}HiddenFields">
-              <hr>
-              <label>Email:</label>
-              <input type="email" name="user${counter}Email" value="${profileInfo.email}" disabled readonly />
-              <label>Age:</label>
-              <input type="email" name="user${counter}Age" value="${profileInfo.age}" disabled readonly />
-          </div>
-          
-          <button>Show more</button>
-      `
-
-      divProfile.innerHTML = profileHTML
-      divProfile.querySelector('div').style.display = 'none'
-      mainElement.appendChild(divProfile)
-
-      let showMoreButton = divProfile.querySelector('button')
-      showMoreButton.addEventListener('click', moreInfoEvent)
-
-      function moreInfoEvent(event) {
-          let lockRadioButton = divProfile.querySelector('input[type="radio"]')
-          
-          if (showMoreButton.textContent === 'Show more' && !lockRadioButton.checked) {
-              divProfile.querySelector('div').style.display = 'block'
-              showMoreButton.textContent = 'Hide it'
-          } else if (showMoreButton.textContent === 'Hide it' && !lockRadioButton.checked) {
-              divProfile.querySelector('div').style.display = 'none'
-              showMoreButton.textContent = 'Show more'
-          }
-      }
-
-      counter += 1
+function lockedProfile() {
+    let mainElement = document.getElementById("main");
+    //target sample card
+    let sampleCardElement = document.querySelector("div.profile:first-of-type");
+    //make a get request and handle the data by creating cards for each entry
+    let url = "http://localhost:3030/jsonstore/advanced/profiles";
+  
+    fetch(url)
+      .then((getResponse) => getResponse.json())
+      .then((data) => {
+        let fragment = document.createDocumentFragment();
+  
+        Object.values(data).forEach((entry) => {
+          let copyCard = sampleCardElement.cloneNode(true);
+          copyCard.style.display = "inline-block";
+          let lockInputElement = copyCard.querySelector('input[value=lock]');
+          lockInputElement.name = 'user' + entry.username + 'Locked';
+          let unlockInputElement = copyCard.querySelector('input[value=unlock]');
+          unlockInputElement.name = 'user' + entry.username + 'Locked';
+          let usernameInputElement = copyCard.querySelector(
+            "input[name=user1Username]"
+          );
+          usernameInputElement.value = entry.username;
+          let inputEmailElement = copyCard.querySelector(
+            "input[name=user1Email]"
+          );
+          inputEmailElement.value = entry.email;
+          let inputAgeElement = copyCard.querySelector("input[name=user1Age]");
+          inputAgeElement.value = entry.age;
+          inputAgeElement.type = 'email';
+          //hide extra info
+          let hiddenInfoElement = copyCard.querySelector('div.user1Username');
+          hiddenInfoElement.style.display = 'none';
+          let cardBtnElement = copyCard.querySelector("button");
+          cardBtnElement.addEventListener("click", async function () {
+            if (unlockInputElement.checked === true && cardBtnElement.textContent === 'Show more') {
+              cardBtnElement.textContent = "Hide it";
+              hiddenInfoElement.style.display = "block";
+            } else if (unlockInputElement.checked === true && cardBtnElement.textContent === 'Hide it'){
+              cardBtnElement.textContent = "Show more";
+              hiddenInfoElement.style.display = "none";
+            }
+          });
+          //add to fragment
+          fragment.appendChild(copyCard);
+        });
+  
+        //append fragment to main
+        mainElement.appendChild(fragment);
+        //delete sample card to not mess up with the tests
+        mainElement.removeChild(sampleCardElement);
+      })
+      .catch((error) => console.log(error));
   }
-}
